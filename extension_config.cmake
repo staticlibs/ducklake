@@ -3,6 +3,7 @@
 # Extension from this repo
 duckdb_extension_load(ducklake
         SOURCE_DIR ${CMAKE_CURRENT_LIST_DIR}
+        DONT_LINK
 )
 
 if(NOT DEFINED ENV{DISABLE_EXTENSIONS_FOR_TEST})
