@@ -18,8 +18,8 @@ int main() {
     duckdb::DuckDB db(nullptr);
 
     duckdb::Connection setup(db);
-    ExecuteCheck(setup, "LOAD '../build/relassert/extension/ducklake/ducklake.duckdb_extension'");
-    ExecuteCheck(setup, "LOAD '../build/relassert/extension/postgres_scanner/postgres_scanner.duckdb_extension'");
+    ExecuteCheck(setup, "LOAD '/Volumes/data/projects/duck/ducklake/build/relassert/extension/ducklake/ducklake.duckdb_extension'");
+    ExecuteCheck(setup, "LOAD '/Volumes/data/projects/duck/ducklake/build/relassert/extension/postgres_scanner/postgres_scanner.duckdb_extension'");
     ExecuteCheck(setup, "ATTACH 'ducklake:postgres:host=127.0.0.1 port=5432 dbname=postgres user=postgres password=postgres' AS lake (DATA_PATH '/Volumes/data/projects/duck/ducklake/adbc_build/data', ENCRYPTED)");
     ExecuteCheck(setup, "SET threads=1");
     ExecuteCheck(setup, "SET force_mbedtls_unsafe = 'true'");
@@ -43,7 +43,12 @@ int main() {
 		const auto deadline = std::chrono::steady_clock::now() + std::chrono::seconds(duration_seconds);
 		int iteration = 0;
 		while (std::chrono::steady_clock::now() < deadline) {
-			con.Query("UPDATE lake.app_data.table_0 SET revision_id=" + std::to_string(iteration) + " WHERE item_id='item-1'");
+            auto ps = con.Prepare("UPDATE lake.app_data.table_0 SET revision_id=" + std::to_string(iteration) + " WHERE item_id='item-1'");
+            if (!ps) {
+                std::cout << "Prepare fails" << std::endl;
+                std::exit(1);
+            }
+            ps->Execute();
 			++iteration;
 		}
 	});
@@ -58,7 +63,12 @@ int main() {
 		const auto deadline = std::chrono::steady_clock::now() + std::chrono::seconds(duration_seconds);
 		int iteration = 0;
 		while (std::chrono::steady_clock::now() < deadline) {
-			con.Query("CREATE OR REPLACE TABLE lake.app_data.replaced_table AS SELECT 1 AS value");
+            auto ps = con.Prepare("CREATE OR REPLACE TABLE lake.app_data.replaced_table AS SELECT 1 AS value");
+            if (!ps) {
+                std::cout << "Prepare fails" << std::endl;
+                std::exit(1);
+            }
+            ps->Execute();
 			++iteration;
 		}
 	});

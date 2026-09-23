@@ -88,8 +88,8 @@ int main(int argc, char **argv) {
 	RequireSuccess(driver.ConnectionNew(&setup, &error), error, "setup ConnectionNew");
 	RequireSuccess(driver.ConnectionInit(&setup, &database, &error), error, "setup ConnectionInit");
 
-    ExecuteCheck(setup, "LOAD '../build/relassert/extension/ducklake/ducklake.duckdb_extension'");
-    ExecuteCheck(setup, "LOAD '../build/relassert/extension/postgres_scanner/postgres_scanner.duckdb_extension'");
+    ExecuteCheck(setup, "LOAD '/Volumes/data/projects/duck/ducklake/build/debug/extension/ducklake/ducklake.duckdb_extension'");
+    ExecuteCheck(setup, "LOAD '/Volumes/data/projects/duck/ducklake/build/debug/extension/postgres_scanner/postgres_scanner.duckdb_extension'");
     ExecuteCheck(setup, "ATTACH 'ducklake:postgres:host=127.0.0.1 port=5432 dbname=postgres user=postgres password=postgres' AS lake (DATA_PATH '/Volumes/data/projects/duck/ducklake/adbc_build/data', ENCRYPTED)");
     ExecuteCheck(setup, "SET threads=1");
     ExecuteCheck(setup, "SET force_mbedtls_unsafe = 'true'");

@@ -43,15 +43,27 @@ concurrentloop j 0 2
 
 loop i 0 16
 
+statement ok
+PREPARE p1 AS UPDATE lake.app_data.table_0 SET revision_id={i} WHERE item_id='item-1'
+
 statement maybe
-UPDATE lake.app_data.table_0 SET revision_id={i} WHERE item_id='item-1'
+EXECUTE p1
 ----
 Failed to commit: Failed to commit DuckLake transaction.
 
+statement ok
+DEALLOCATE p1
+
+statement ok
+PREPARE p2 AS CREATE OR REPLACE TABLE lake.app_data.replaced_table AS SELECT 1 AS value
+
 statement maybe
-CREATE OR REPLACE TABLE lake.app_data.replaced_table AS SELECT 1 AS value
+EXECUTE p2
 ----
 Failed to commit: Failed to commit DuckLake transaction.
+
+statement ok
+DEALLOCATE p2
 
 endloop
 
