@@ -3,6 +3,7 @@
 # Extension from this repo
 duckdb_extension_load(ducklake
         SOURCE_DIR ${CMAKE_CURRENT_LIST_DIR}
+        DONT_LINK
 )
 
 if(NOT DEFINED ENV{DISABLE_EXTENSIONS_FOR_TEST})
@@ -16,9 +17,7 @@ if($ENV{ENABLE_SQLITE_SCANNER})
     include("${EXTENSION_CONFIG_BASE_DIR}/sqlite_scanner.cmake")
 endif()
 
-if($ENV{ENABLE_POSTGRES_SCANNER})
-    include("${EXTENSION_CONFIG_BASE_DIR}/postgres_scanner.cmake")
-endif()
+include("${EXTENSION_CONFIG_BASE_DIR}/postgres_scanner.cmake")
 
 if($ENV{ENABLE_QUACK})
     include_directories(

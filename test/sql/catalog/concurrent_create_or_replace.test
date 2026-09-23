@@ -1,0 +1,70 @@
+# name: test/sql/catalog/concurrent_create_or_replace.test
+# group: [catalog]
+
+require parquet
+
+statement ok
+LOAD '/Volumes/data/projects/duck/ducklake/build/relassert/extension/ducklake/ducklake.duckdb_extension'
+
+statement ok
+LOAD '/Volumes/data/projects/duck/ducklake/build/relassert/extension/postgres_scanner/postgres_scanner.duckdb_extension'
+
+statement ok
+SET pg_null_byte_replacement=''
+
+statement ok
+ATTACH 'ducklake:postgres:host=127.0.0.1 port=5432 dbname=postgres user=postgres password=postgres' AS lake (DATA_PATH '/Volumes/data/projects/duck/ducklake/adbc_build/data/')
+
+statement ok
+SET threads=1
+
+statement ok
+SET preserve_insertion_order=false
+
+statement ok
+SET force_mbedtls_unsafe = 'true'
+
+statement ok
+DROP SCHEMA iF EXISTS lake.app_data CASCADE
+
+statement ok
+CREATE SCHEMA lake.app_data
+
+statement ok
+CREATE TABLE lake.app_data.table_0 (item_id VARCHAR, lookup_id VARCHAR, revision_id BIGINT, status VARCHAR)
+
+statement ok
+CREATE TABLE lake.app_data.table_1 (item_id VARCHAR, lookup_id VARCHAR, revision_id BIGINT, status VARCHAR)
+
+statement ok
+INSERT INTO lake.app_data.table_0 VALUES ('item-1','lookup-1',1,'active')
+
+concurrentloop j 0 2
+
+loop i 0 16
+
+statement ok
+PREPARE p1 AS UPDATE lake.app_data.table_0 SET revision_id={i} WHERE item_id='item-1'
+
+statement maybe
+EXECUTE p1
+----
+Failed to commit: Failed to commit DuckLake transaction.
+
+statement ok
+DEALLOCATE p1
+
+statement ok
+PREPARE p2 AS CREATE OR REPLACE TABLE lake.app_data.replaced_table AS SELECT 1 AS value
+
+statement maybe
+EXECUTE p2
+----
+Failed to commit: Failed to commit DuckLake transaction.
+
+statement ok
+DEALLOCATE p2
+
+endloop
+
+endloop
