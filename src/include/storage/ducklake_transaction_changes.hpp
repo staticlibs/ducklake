@@ -8,7 +8,6 @@
 
 #pragma once
 
-#include "duckdb/common/identifier.hpp"
 #include "duckdb/transaction/transaction.hpp"
 #include "duckdb/common/case_insensitive_map.hpp"
 #include "duckdb/common/reference_map.hpp"
@@ -20,18 +19,12 @@ namespace duckdb {
 class CatalogEntry;
 class DuckLakeSchemaEntry;
 
-struct CreatedEntryInfo {
-	Identifier name;
-	CatalogType type;
-	SchemaIndex schema_id;
-};
-
 struct TransactionChangeInformation {
 	case_insensitive_set_t created_schemas;
-	map<SchemaIndex, Identifier> dropped_schemas;
-	case_insensitive_map_t<vector<CreatedEntryInfo>> created_tables;
-	case_insensitive_map_t<vector<CreatedEntryInfo>> created_scalar_macros;
-	case_insensitive_map_t<vector<CreatedEntryInfo>> created_table_macros;
+	map<SchemaIndex, reference<DuckLakeSchemaEntry>> dropped_schemas;
+	case_insensitive_map_t<reference_set_t<CatalogEntry>> created_tables;
+	case_insensitive_map_t<reference_set_t<CatalogEntry>> created_scalar_macros;
+	case_insensitive_map_t<reference_set_t<CatalogEntry>> created_table_macros;
 
 	set<TableIndex> altered_tables;
 	set<TableIndex> altered_tables_with_schema_version_changes;

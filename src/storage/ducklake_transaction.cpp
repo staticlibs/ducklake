@@ -917,11 +917,7 @@ void GetTransactionTableChanges(reference<CatalogEntry> table_entry, Transaction
 		case LocalChangeType::RENAMED: {
 			// write any new tables that we created
 			auto &schema = table.ParentSchema().Cast<DuckLakeSchemaEntry>();
-			CreatedEntryInfo info;
-			info.name = table.name;
-			info.type = table.type;
-			info.schema_id = schema.GetSchemaId();
-			changes.created_tables[schema.name.GetIdentifierName()].push_back(std::move(info));
+			changes.created_tables[schema.name.GetIdentifierName()].insert(table);
 			break;
 		}
 		default:
@@ -959,11 +955,7 @@ void GetTransactionViewChanges(reference<CatalogEntry> view_entry, TransactionCh
 		case LocalChangeType::RENAMED: {
 			// write any new view that we created
 			auto &schema = view.ParentSchema().Cast<DuckLakeSchemaEntry>();
-			CreatedEntryInfo info;
-			info.name = view.name;
-			info.type = view.type;
-			info.schema_id = schema.GetSchemaId();
-			changes.created_tables[schema.name.GetIdentifierName()].push_back(std::move(info));
+			changes.created_tables[schema.name.GetIdentifierName()].insert(view);
 			break;
 		}
 		default:
@@ -1004,7 +996,7 @@ TransactionChangeInformation DuckLakeTransaction::GetTransactionChanges() const 
 		changes.dropped_table_macros.insert(dropped_macro_idx);
 	}
 	for (auto &entry : dropped_schemas) {
-		changes.dropped_schemas[entry.first] = entry.second.get().name;
+		changes.dropped_schemas.insert(entry);
 	}
 	if (new_schemas) {
 		for (auto &entry : new_schemas->GetEntries()) {
@@ -1016,22 +1008,14 @@ TransactionChangeInformation DuckLakeTransaction::GetTransactionChanges() const 
 		for (auto &entry : schema_entry.second->GetEntries()) {
 			auto &macro = *entry.second;
 			auto &schema = macro.ParentSchema().Cast<DuckLakeSchemaEntry>();
-			CreatedEntryInfo info;
-			info.name = macro.name;
-			info.type = macro.type;
-			info.schema_id = schema.GetSchemaId();
-			changes.created_scalar_macros[schema.name.GetIdentifierName()].push_back(std::move(info));
+			changes.created_scalar_macros[schema.name.GetIdentifierName()].insert(macro);
 		}
 	}
 	for (auto &schema_entry : new_table_macros) {
 		for (auto &entry : schema_entry.second->GetEntries()) {
 			auto &macro = *entry.second;
 			auto &schema = macro.ParentSchema().Cast<DuckLakeSchemaEntry>();
-			CreatedEntryInfo info;
-			info.name = macro.name;
-			info.type = macro.type;
-			info.schema_id = schema.GetSchemaId();
-			changes.created_table_macros[schema.name.GetIdentifierName()].push_back(std::move(info));
+			changes.created_table_macros[schema.name.GetIdentifierName()].insert(macro);
 		}
 	}
 	for (auto &schema_entry : new_tables) {
